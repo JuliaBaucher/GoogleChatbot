@@ -1,78 +1,102 @@
-Here is the updated guide formatted specifically for a GitHub README.md. I have used professional Markdown syntax, including task lists, bold highlights, and code blocks to ensure it looks perfect on your repository page.
+**JULIA BAUCHER AI CHATBOT: END-TO-END DEPLOYMENT GUIDE**
 
-🤖 Julia's AI Chatbot: End-to-End Deployment Guide
 This guide covers the secure setup and deployment of a professional AI assistant using Google Cloud and Gemini.
 
-🛠 Step 0: The Toolbox
-Google Cloud Account: Cloud Console
+================================================================================
 
-Google AI Studio: AI Studio (To get your API key)
+#STEP 0: THE TOOLBOX
 
-GitHub: Where your CV website is hosted.
+• Google Cloud Account: Access via the Google Cloud Console.
 
-🔑 Step 1: Get Your Gemini API Key
-Go to Google AI Studio.
+• Google AI Studio: Access via AI Studio to retrieve your API key.
 
-Click "Get API key" on the left sidebar.
+• GitHub: Host for your professional CV website.
 
-Click "Create API key in new project".
+================================================================================
 
-Copy the key and save it in a Notepad. You will need it for Step 4.
+#STEP 1: GET YOUR GEMINI API KEY
 
-🏗 Step 2: Set Up Your Google Cloud Project
-Go to the Cloud Console.
+• Navigate to Google AI Studio.
 
-At the top, click the Project Dropdown > New Project.
+[Link text](https://aistudio.google.com/)
 
-Name it julia-cv-bot and click Create.
+• Click Get API key on the left sidebar.
 
-⚠️ Important: Ensure your new project is selected in the top bar before proceeding.
+• Select Create API key in new project.
 
-💡 Step 3: Enable the "Cloud Brain" APIs
-Search for and Enable these three APIs in the search bar:
+• Copy the generated key and save it in a secure Notepad file.
 
-[ ] Cloud Functions API
+================================================================================
 
-[ ] Cloud Build API
+#STEP 2: SET UP YOUR GOOGLE CLOUD PROJECT
 
-[ ] Generative Language API (Crucial for Gemini access)
+• Open the Google Cloud Console.
 
-🚀 Step 4: Create Your Backend (Cloud Function)
-4A) Initial Setup
-Search for Cloud Functions and click Create Function.
+[Link text](https://console.cloud.google.com/)
 
-Environment: 2nd Gen.
+• Click the Project Dropdown at the top of the page and select New Project.
 
-Function name: askgemini (Keep it lowercase for consistency).
+• Name the project julia-cv-bot and click Create.
 
-Region: europe-west1.
+• Ensure the new project is active in the top navigation bar before proceeding.
 
-Authentication: Select "Allow unauthenticated invocations".
+================================================================================
 
-4B) Linking the Key (Secure Method)
-Go to APIs & Services > Credentials.
+#STEP 3: ENABLE THE CLOUD BRAIN APIS
 
-Verify: If your key isn't there, click + CREATE CREDENTIALS > API Key.
+• Click the Hamburger Menu (three horizontal lines) in the top-left corner.
 
-Restrictions: Click your Key Name. Under API restrictions, ensure "Don't restrict key" is selected.
+• Hover over APIs and Services and select Library.
 
-In Cloud Function Settings: Click Runtime, build, connections and security settings.
+• Search for Cloud Functions API in the search bar and click Enable.
 
-Under Environment variables, click Add Variable:
+• Search for Cloud Build API in the search bar and click Enable.
 
-Name: GEMINI_API_KEY
+• Search for Generative Language API in the search bar and click Enable.
 
-Value: [Your API Key]
+================================================================================
 
-(Optional) Add another variable:
+#STEP 4: CREATE YOUR BACKEND CLOUD FUNCTION
 
-Name: KNOWLEDGE_BASE
+##4A) INITIAL SETUP
 
-Value: [Paste your long Bio here]
+• Search for Cloud Functions in the top search bar (Marketplace) and select the service.
 
-4C) Add the Logic (The Code)
-Runtime: Node.js 20
+• Click Create Function.
 
+• Set Environment to 2nd Gen.
+
+• Set Function name to askgemini.
+
+• Set Region to europe-west1.
+
+• Select Allow unauthenticated invocations under the Authentication section.
+
+##4B) LINKING THE KEY (SECURE METHOD)
+
+• Navigate to APIs and Services then Credentials.
+
+• Click Create Credentials and select API Key if the Studio key is not listed.
+
+• Click the Key Name and set API restrictions to Don't restrict key.
+
+• Return to the Cloud Function setup and click Runtime, build, connections and security settings.
+
+• Add an Environment variable with the name GEMINI_API_KEY and paste your key.
+
+• Add an Environment variable with the name KNOWLEDGE_BASE and paste your detailed bio.
+
+• Click Next to proceed to the code editor.
+
+##4C) ADD THE LOGIC
+
+• Set Runtime to Node.js 20.
+
+• Update the Entry point field to askgemini to match the function name in the code.
+
+PACKAGE.JSON
+
+```
 {
   "name": "julia-cv-bot",
   "version": "1.0.0",
@@ -80,13 +104,16 @@ Runtime: Node.js 20
     "@google/generative-ai": "^0.21.0"
   }
 }
+```
 
-#Index.js with knoweldge base and system prompt in the environemental variable
+
+INDEX.JS
+
+```
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.askgemini = async (req, res) => {
-  // CORS setup: Essential for GitHub Pages
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type");
@@ -96,17 +123,15 @@ exports.askgemini = async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     const knowledgeBase = process.env.KNOWLEDGE_BASE || "Senior Product Manager at Amazon.";
-
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const userMessage = req.body.message;
     if (!userMessage) {
-      return res.status(200).send({ reply: "Bonjour! I'm Julia's AI assistant. How can I help you today?" });
+      return res.status(200).send({ reply: "Bonjour! I am Julia's AI assistant. How can I help you today?" });
     }
 
     const fullPrompt = `Context: ${knowledgeBase}\n\nQuestion: ${userMessage}`;
-
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;
     const text = response.text();
@@ -115,72 +140,36 @@ exports.askgemini = async (req, res) => {
   } catch (error) {
     console.error("Error:", error.message);
     const errorMsg = error.message.includes("429") 
-      ? "I'm receiving many questions! Please wait 60 seconds." 
-      : "I'm having a technical moment. Please try again shortly.";
+      ? "I am receiving many questions! Please wait 60 seconds." 
+      : "I am having a technical moment. Please try again shortly.";
     res.status(200).send({ reply: errorMsg });
   }
 };
-#index.js with knowledge base integrated in the fonction 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Note: On utilise askgemini (minuscule) pour correspondre à votre version fonctionnelle
-exports.askgemini = async (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
+```
 
-  if (req.method === "OPTIONS") return res.status(204).send("");
+• Click Deploy and wait approximately 2 minutes for completion.
 
-  try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("La clé API n'est pas configurée.");
+• Copy the Trigger URL provided after successful deployment.
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+================================================================================
 
-    const userMessage = req.body.message;
-    if (!userMessage) {
-      return res.status(200).send({ reply: "Connexion établie ! Posez votre question." });
-    }
+#STEP 5: UPDATE GITHUB
 
-    // Intégration de la base de connaissances (Knowledge Base)
-    const knowledgeBase = `
-      Tu es l'assistant IA de Julia Baucher sur son site CV. 
-      Julia est Senior Product Manager III chez Amazon (ML/AI). 
-      Détails clés : PhD École des Mines, experte en GenAI, RAG, AWS Bedrock, et ex-Amadeus. 
-      Réponds de façon professionnelle et concise.
-    `;
+• Open your website repository on GitHub.
 
-    // On combine la base de connaissances avec la question de l'utilisateur
-    const fullPrompt = `${knowledgeBase}\n\nQuestion de l'utilisateur: ${userMessage}`;
+• Paste the Trigger URL into the JavaScript fetch() command in your code.
 
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    const text = response.text();
+• Commit and push the changes to your live site.
 
-    res.status(200).send({ reply: text });
+================================================================================
 
-  } catch (error) {
-    console.error("ERREUR:", error.message);
-    res.status(500).send({ 
-      reply: "Désolé, j'ai une erreur technique : " + error.message 
-    });
-  }
-};
+#STEP 6: THE ARCHITECT'S SECRET TEST
 
-Click Deploy. Once finished, copy the Trigger URL.
+• Verify the API status by visiting this URL: https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_API_KEY
 
-🌐 Step 5: Update GitHub
-Paste the Trigger URL from Google Cloud into your website's JavaScript fetch() command.
+• If you see a JSON list of models: The key and API are correctly configured.
 
-🔍 Step 6: The Architect's Secret Test
-If the bot doesn't respond, test your key directly in the browser: https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_API_KEY
+• If you see 403 Restricted: The key has restrictions blocking Gemini.
 
-Result,Meaning
-JSON list of models,Your Key and API are working perfectly.
-403 Restricted,Your Key has API restrictions that block Gemini.
-404 Not Found,The Generative Language API is not enabled in your project.
-
-Entry point: askgemini (Must match the exports name in the code).
-
-package.json
+• If you see 404 Not Found: The Generative Language API is disabled.
