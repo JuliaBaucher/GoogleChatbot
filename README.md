@@ -1,3 +1,13 @@
+▶️ **# Watch the demo video **  
+
+
+
+
+
+https://github.com/user-attachments/assets/16409a41-7ded-48e8-931c-b242c9601cc3
+
+
+
 **JULIA BAUCHER AI CHATBOT: END-TO-END DEPLOYMENT GUIDE**
 
 This guide covers the secure setup and deployment of a professional AI assistant using Google Cloud and Gemini.
